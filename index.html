@@ -310,7 +310,13 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
     { id: "sec", nome: "Porta seccionada", curto: "Seccionada" }
   ];
   var PROD = {}; PRODUTOS.forEach(function(p){ PROD[p.id] = p; });
-  var EMPRESA_PADRAO = { nome: "Megatec Portas e Portões", selo: "Revenda autorizada Naport", cnpj: "", telefone: "", email: "", endereco: "", instagram: "@megatecportas", vendedor: "Luan" };
+  var EMPRESA_PADRAO = { nome: "Megatec Portas e Portões", selo: "Revenda autorizada Naport", cnpj: "", telefone: "", email: "", endereco: "Rodovia SC 445, Km 02, nº 1150, Bairro Liri, Içara - SC", instagram: "@megatecportas", vendedor: "Luan" };
+  var DESC_PADRAO = {
+    aco: "Porta de enrolar em aço galvanizado\nPintura eletrostática (cor a definir)\nPVC anti-ruído\nTrava-lâminas\nAutomatizador\nCentral com 2 controles",
+    alu: "Porta 100% em alumínio com motor interno ao eixo\nPintura eletrostática (cor a definir)\nAcompanha 2 controles",
+    sec: "Portão seccionado automático\nPainéis em PU injetado\nCentral Wi-Fi\nAcompanha 2 controles\nSensor anti-esmagamento\nBorrachas de vedação"
+  };
+  function descPadrao(s){ s = String(s || "").trim(); return !s || Object.keys(DESC_PADRAO).some(function(k){ return DESC_PADRAO[k] === s; }); }
   var K = { draft: "mgorc.draft", emp: "mgorc.empresa", next: "mgorc.next", hist: "mgorc.hist" };
   var store = {
     get: function(k, d){ try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -344,7 +350,7 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
   function slug(s){ return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40); }
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
 
-  function novoItem(p){ return { id: uid(), prod: p || "aco", desc: "", larg: "", alt: "", qtd: "1", valor: "" }; }
+  function novoItem(p){ p = p || "aco"; return { id: uid(), prod: p, desc: DESC_PADRAO[p] || "", larg: "", alt: "", qtd: "1", valor: "" }; }
   function nextNum(){ return parseInt(store.get(K.next, 1), 10) || 1; }
   function novoOrc(){
     return { id: uid(), numero: String(nextNum()), data: today(), validade: "7", prazo: "", pagamento: "", desconto: "", obs: "",
@@ -353,13 +359,15 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
   function exemplo(){
     var o = novoOrc(); o.exemplo = true;
     o.cliente = { nome: "Cliente exemplo", cidade: "Criciúma", telefone: "", endereco: "" };
-    var a = novoItem("aco"); a.desc = "Chapa lisa galvanizada, com automatizador e 2 controles remotos."; a.larg = "3,20"; a.alt = "2,80"; a.valor = "6.900,00";
-    var b = novoItem("sec"); b.desc = "Painéis brancos, automatizada."; b.larg = "2,50"; b.alt = "2,20"; b.valor = "11.400,00";
+    var a = novoItem("aco"); a.larg = "3,20"; a.alt = "2,80"; a.valor = "6.900,00";
+    var b = novoItem("sec"); b.larg = "2,50"; b.alt = "2,20"; b.valor = "11.400,00";
     o.itens = [a, b]; o.prazo = "Até 25 dias após a confirmação"; o.pagamento = "Entrada + saldo na instalação";
     return o;
   }
 
-  var emp = Object.assign({}, EMPRESA_PADRAO, store.get(K.emp, {}));
+  var empSalva = store.get(K.emp, {}) || {};
+  var emp = {};
+  Object.keys(EMPRESA_PADRAO).forEach(function(k){ var v = empSalva[k]; emp[k] = (v != null && String(v).trim() !== "") ? v : EMPRESA_PADRAO[k]; });
   var orc = store.get(K.draft, null);
   if (!orc || !Array.isArray(orc.itens) || !orc.cliente) orc = exemplo();
   var savedSig = null;
@@ -426,7 +434,7 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
       '<div class="item-head"><h3>Porta ' + (i + 1) + '</h3><div class="item-acts"><button type="button" class="lnk" data-act="dup">Duplicar</button>' +
         (n > 1 ? '<button type="button" class="lnk" data-act="del">Remover</button>' : '') + '</div></div>' +
       '<div class="prod-pick" role="radiogroup" aria-label="Tipo de porta">' + pick + '</div>' +
-      '<label class="fld"><span>Descrição</span><textarea id="d-' + it.id + '" data-k="desc" rows="3" placeholder="Ex.: chapa lisa galvanizada, automatizador com 2 controles">' + esc(it.desc) + '</textarea></label>' +
+      '<label class="fld"><span>Descrição</span><textarea id="d-' + it.id + '" data-k="desc" rows="3" placeholder="Detalhes da porta: material, cor, motor, controles">' + esc(it.desc) + '</textarea></label>' +
       '<div class="row3">' +
         '<label class="fld"><span>Largura (m)</span><input id="l-' + it.id + '" data-k="larg" inputmode="decimal" autocomplete="off" placeholder="3,20" value="' + esc(it.larg) + '"></label>' +
         '<label class="fld"><span>Altura (m)</span><input id="a-' + it.id + '" data-k="alt" inputmode="decimal" autocomplete="off" placeholder="2,80" value="' + esc(it.alt) + '"></label>' +
@@ -491,6 +499,7 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
     if (el.matches(".prod input")) {
       var it = findItem(el); if (!it) return;
       it.prod = el.value;
+      if (descPadrao(it.desc)) { it.desc = DESC_PADRAO[it.prod] || ""; var ta = document.getElementById("d-" + it.id); if (ta) ta.value = it.desc; }
       el.closest(".prod-pick").querySelectorAll(".prod").forEach(function(l){ l.classList.toggle("on", l.querySelector("input").checked); });
       changed();
     }
