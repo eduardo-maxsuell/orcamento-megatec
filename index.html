@@ -95,6 +95,20 @@ input::placeholder,textarea::placeholder{color:var(--muted);opacity:.7}
 .warn{margin:0;font-size:13px;color:var(--warn);font-weight:600}
 .btn-add{justify-self:start;border:1.5px dashed var(--fg);background:transparent;color:var(--fg);font:600 15px/1 var(--body);padding:12px 16px;border-radius:8px}
 
+/* Itens inclusos de cada porta */
+.ck-box{border:1px solid var(--line);border-radius:8px;background:var(--field);min-width:0}
+.ck-box>summary{cursor:pointer;padding:12px;list-style-position:inside;font:600 11px/1.2 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ck-n{float:right;font:600 13px/1.1 var(--body);letter-spacing:0;text-transform:none;color:var(--fg)}
+.ck-list{display:grid;padding:0 12px 12px}
+.ck{display:flex;align-items:center;gap:10px;min-height:44px;border-top:1px solid var(--line);min-width:0}
+.ck-l{flex:1;display:flex;align-items:center;gap:10px;min-width:0;padding:9px 0;cursor:pointer;font-size:15px;line-height:1.3}
+.ck input[type="checkbox"]{flex:none;width:20px;height:20px;margin:0;padding:0;accent-color:var(--fg);cursor:pointer}
+.ck.off .ck-t{color:var(--muted)}
+.ck-v{flex:none;width:132px;padding:7px 9px;background:var(--surface)}
+.ck-xt{flex:1;padding:7px 9px;background:var(--surface)}
+.ck-sub{padding:16px 0 6px;font:600 11px/1.2 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ck-add{justify-self:start;margin-top:10px;border:1.5px dashed var(--fg);background:transparent;color:var(--fg);font:600 14px/1 var(--body);padding:10px 12px;border-radius:8px}
+
 /* Dados da empresa */
 details.card{gap:0}
 details.card[open]{gap:14px}
@@ -162,6 +176,9 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
 .pp-item-n{font:700 10px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
 .pp-item-name{font:800 15px/1.25 var(--display);text-transform:uppercase;color:var(--ink);margin-top:5px}
 .pp-desc{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:6px;font-size:13px;color:var(--ink)}
+.pp-carac{list-style:none;margin:9px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 18px;font-size:12px;line-height:1.35;color:var(--ink)}
+.pp-carac li{display:grid;grid-template-columns:10px minmax(0,1fr);overflow-wrap:anywhere}
+.pp-carac li span:first-child{color:var(--ink-2)}
 .pp-spec{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:9px;font-size:12.5px;color:var(--ink-2)}
 .pp-spec b{font:700 9.5px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-right:4px}
 .pp-price{display:grid;gap:3px;justify-items:end;text-align:right;min-width:128px}
@@ -296,6 +313,7 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
   </div>
 </div>
 
+<datalist id="cores"></datalist>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div id="capture" aria-hidden="true"></div>
 
@@ -320,6 +338,100 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
     sec: "Portão seccionado automático\nPainéis em PU injetado\nCentral Wi-Fi\nAcompanha 2 controles\nSensor anti-esmagamento\nBorrachas de vedação"
   };
   var DESC_ANTIGA = ["Porta de enrolar em aço galvanizado\nPintura eletrostática (cor a definir)\nPVC anti-ruído\nTrava-lâminas\nAutomatizador\nCentral com 2 controles"];
+  // Itens de cada porta (lista do Luan). campo "cor" = cor da pintura/painel; campo "txt" = valor livre (ex.: capacidade do motor).
+  // op = opcional: aparece desmarcado. sem = texto do perfil quando a pintura não está marcada.
+  var CORES = ["Preto", "Branco", "Prata", "Cinza", "Grafite", "Azul", "Vermelho", "RAL "];
+  var OPCIONAIS = [
+    { k: "nobreak", t: "Nobreak", op: true },
+    { k: "antiqueda", t: "Sistema anti-queda", op: true },
+    { k: "portinhola", t: "Portinhola", op: true },
+    { k: "alcapao", t: "Alçapão", op: true }
+  ];
+  var CARAC = {
+    aco: [
+      { k: "perfil", t: "Perfil liso em chapa 22 galvanizada", sem: "Perfil liso em chapa 22 galvanizada, sem pintura" },
+      { k: "guia", t: "Guia lateral zincada 30 × 60 mm" },
+      { k: "eixo", t: "Eixo tubo redondo 114,3 mm (4,5\")" },
+      { k: "soleira", t: "Soleira em T 2 mm" },
+      { k: "motor", t: "Automatizador", campo: "txt", vd: "200 kg", ph: "Capacidade" },
+      { k: "borracha", t: "Borracha 55 × 5 mm para soleira (acabamento)" },
+      { k: "pvc", t: "PVC anti-ruído 25 mm preto" },
+      { k: "trava", t: "Trava-lâminas" },
+      { k: "metalon", t: "Tubo metalon zincado 40 × 30 mm, 1,25 mm" },
+      { k: "pintura", t: "Pintura padrão", campo: "cor" },
+      { k: "central", t: "Central com 2 controles" },
+      { k: "frete", t: "Frete" },
+      { k: "inst", t: "Instalação" }
+    ].concat(OPCIONAIS),
+    alu: [
+      { k: "laminas", t: "Lâminas em alumínio duplas (fechadas)" },
+      { k: "pintura", t: "Pintura eletrostática", campo: "cor" },
+      { k: "feltro", t: "Feltro anti-ruído" },
+      { k: "trava", t: "Trava-lâminas" },
+      { k: "eixo", t: "Eixo tubo em alumínio" },
+      { k: "guias", t: "Guias deslizantes" },
+      { k: "motor", t: "Automatizador" },
+      { k: "central", t: "Central para acionamento (2 controles)" },
+      { k: "borrachas", t: "Borrachas internas das lâminas" },
+      { k: "manivela", t: "Manivela para abertura manual" },
+      { k: "frete", t: "Frete" },
+      { k: "inst", t: "Instalação" }
+    ].concat(OPCIONAIS),
+    sec: [
+      { k: "pext", t: "Painéis externos", campo: "cor", vd: "Preto" },
+      { k: "pint", t: "Painéis internos brancos" },
+      { k: "molas", t: "Pares de molas" },
+      { k: "motor", t: "Automatizador" },
+      { k: "central", t: "Central Wi-Fi (acompanha 2 controles)" },
+      { k: "tubo", t: "Tubo perfil de alumínio lateral" },
+      { k: "roldanas", t: "Roldanas" },
+      { k: "cavalete", t: "Cavalete para roldanas" },
+      { k: "trilhomotor", t: "Trilho para motor" },
+      { k: "guiaslat", t: "Trilhos guias laterais" },
+      { k: "guiassup", t: "Trilhos guias superiores" },
+      { k: "vedlat", t: "Borrachas de vedação lateral" },
+      { k: "vedinf", t: "Borracha de vedação do painel inferior" },
+      { k: "frete", t: "Frete" },
+      { k: "inst", t: "Instalação" }
+    ]
+  };
+  function caracPadrao(p){ return (CARAC[p] || []).map(function(d){ return { k: d.k, on: !d.op, v: d.vd || "" }; }); }
+  function estado(it, k){
+    if (!Array.isArray(it.carac)) it.carac = [];
+    var s = it.carac.filter(function(x){ return x.k === k; })[0];
+    if (!s) {
+      var d = (CARAC[it.prod] || []).filter(function(x){ return x.k === k; })[0];
+      s = { k: k, on: d ? !d.op : false, v: (d && d.vd) || "" }; it.carac.push(s);
+    }
+    return s;
+  }
+  function extraDe(it, id){ return (it.extras || []).filter(function(x){ return x.id === id; })[0] || null; }
+  function linhaTexto(d, s, it){
+    var v = String(s.v || "").trim();
+    if (d.campo === "cor") return d.t + " – " + (v ? "cor: " + v : "cor a definir");
+    if (d.campo) return v ? d.t + " " + v : d.t;
+    if (d.sem && !estado(it, "pintura").on) return d.sem;
+    return d.t;
+  }
+  function linhas(it){
+    var base = (CARAC[it.prod] || []).filter(function(d){ return estado(it, d.k).on; }).map(function(d){ return linhaTexto(d, estado(it, d.k), it); });
+    var ext = (it.extras || []).filter(function(x){ return x.on && String(x.t || "").trim(); }).map(function(x){ return String(x.t).trim(); });
+    return base.concat(ext);
+  }
+  // Orçamentos salvos antes da lista de itens: descrição padrão vira a lista nova; descrição editada vira itens extras
+  function normItem(it){
+    if (!PROD[it.prod]) it.prod = "aco";
+    if (!Array.isArray(it.extras)) it.extras = [];
+    if (!Array.isArray(it.carac)) {
+      if (descPadrao(it.desc)) it.carac = caracPadrao(it.prod);
+      else {
+        it.carac = caracPadrao(it.prod).map(function(s){ s.on = false; return s; });
+        String(it.desc || "").split("\n").forEach(function(l){ if (l.trim()) it.extras.push({ id: uid(), t: l.trim(), on: true }); });
+      }
+    }
+    delete it.desc;
+    return it;
+  }
   function descPadrao(s){ s = String(s || "").trim(); return !s || DESC_ANTIGA.indexOf(s) > -1 || Object.keys(DESC_PADRAO).some(function(k){ return DESC_PADRAO[k] === s; }); }
   var K = { draft: "mgorc.draft", emp: "mgorc.empresa", next: "mgorc.next", hist: "mgorc.hist" };
   var store = {
@@ -354,7 +466,7 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
   function slug(s){ return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40); }
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
 
-  function novoItem(p){ p = p || "aco"; return { id: uid(), prod: p, desc: DESC_PADRAO[p] || "", larg: "", alt: "", qtd: "1", valor: "" }; }
+  function novoItem(p){ p = p || "aco"; return { id: uid(), prod: p, carac: caracPadrao(p), extras: [], larg: "", alt: "", qtd: "1", valor: "" }; }
   function nextNum(){ return parseInt(store.get(K.next, 1), 10) || 1; }
   function novoOrc(){
     return { id: uid(), numero: String(nextNum()), data: today(), validade: "7", prazo: "", pagamento: "", desconto: "", obs: "",
@@ -373,7 +485,8 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
   var emp = {};
   Object.keys(EMPRESA_PADRAO).forEach(function(k){ var v = empSalva[k]; emp[k] = (v != null && String(v).trim() !== "") ? v : EMPRESA_PADRAO[k]; });
   var orc = store.get(K.draft, null);
-  if (!orc || !Array.isArray(orc.itens) || !orc.cliente) orc = exemplo();
+  if (!orc || !Array.isArray(orc.itens) || !orc.cliente || orc.exemplo) orc = exemplo();
+  else orc.itens.forEach(normItem);
   var savedSig = null;
 
   function itemTotal(it){ return money(it.valor) * qty(it.qtd); }
@@ -382,11 +495,11 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
     var desc = Math.min(money(o.desconto), sub);
     return { sub: sub, desc: desc, total: sub - desc };
   }
-  function temConteudo(it){ return itemTotal(it) > 0 || String(it.desc || "").trim() || meas(it.larg) || meas(it.alt); }
+  function temConteudo(it){ return itemTotal(it) > 0 || linhas(it).length || meas(it.larg) || meas(it.alt); }
 
   // ===== Folha =====
   function itemPaper(it, i){
-    var p = PROD[it.prod] || PRODUTOS[0], L = meas(it.larg), A = meas(it.alt), q = qty(it.qtd), v = money(it.valor);
+    var p = PROD[it.prod] || PRODUTOS[0], L = meas(it.larg), A = meas(it.alt), q = qty(it.qtd), v = money(it.valor), ls = linhas(it);
     var spec = [];
     if (L) spec.push(["Largura", dec2.format(L) + " m"]);
     if (A) spec.push(["Altura", dec2.format(A) + " m"]);
@@ -394,7 +507,7 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
     spec.push(["Quantidade", String(q)]);
     return '<div class="pp-item"><img src="' + IMG[p.id] + '" alt="">' +
       '<div class="pp-item-b"><div class="pp-item-n">Item ' + (i + 1) + '</div><div class="pp-item-name">' + esc(p.nome) + '</div>' +
-      (String(it.desc || "").trim() ? '<div class="pp-desc">' + esc(it.desc.trim()) + '</div>' : '') +
+      (ls.length ? '<ul class="pp-carac">' + ls.map(function(l){ return '<li><span>•</span><span>' + esc(l) + '</span></li>'; }).join("") + '</ul>' : '') +
       '<div class="pp-spec">' + spec.map(function(s){ return '<span><b>' + s[0] + ':</b>' + s[1] + '</span>'; }).join("") + '</div></div>' +
       '<div class="pp-price"><span class="pp-k">Valor total</span><strong>' + brl.format(v * q) + '</strong>' +
       (q > 1 ? '<span class="pp-unit">' + q + ' × ' + brl.format(v) + '</span>' : '') + '</div></div>';
@@ -428,6 +541,29 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
   }
 
   // ===== Formulário =====
+  function ckHTML(it){
+    var defs = CARAC[it.prod] || [];
+    var linha = function(d){
+      var s = estado(it, d.k), id = "ck-" + it.id + "-" + d.k;
+      var campo = "";
+      if (d.campo === "cor") campo = '<input class="ck-v" id="cv-' + it.id + '-' + d.k + '" data-cv="' + d.k + '" list="cores" autocomplete="off" placeholder="Cor a definir" aria-label="Cor (' + esc(d.t) + ')" value="' + esc(s.v) + '">';
+      else if (d.campo) campo = '<input class="ck-v" id="cv-' + it.id + '-' + d.k + '" data-cv="' + d.k + '" autocomplete="off" placeholder="' + esc(d.ph || "") + '" aria-label="' + esc(d.ph || d.t) + '" value="' + esc(s.v) + '">';
+      return '<div class="ck' + (s.on ? '' : ' off') + '"><label class="ck-l" for="' + id + '"><input type="checkbox" id="' + id + '" data-ck="' + d.k + '"' + (s.on ? ' checked' : '') + '>' +
+        '<span class="ck-t">' + esc(d.t) + '</span></label>' + campo + '</div>';
+    };
+    var base = defs.filter(function(d){ return !d.op; }), op = defs.filter(function(d){ return d.op; });
+    var extras = (it.extras || []).map(function(x){
+      return '<div class="ck' + (x.on ? '' : ' off') + '"><input type="checkbox" id="xk-' + it.id + '-' + x.id + '" data-xk="' + x.id + '"' + (x.on ? ' checked' : '') + ' aria-label="Incluir no orçamento">' +
+        '<input class="ck-xt" id="xt-' + it.id + '-' + x.id + '" data-xt="' + x.id + '" autocomplete="off" placeholder="Descreva o item" value="' + esc(x.t) + '">' +
+        '<button type="button" class="lnk" data-act="xdel" data-x="' + x.id + '">Remover</button></div>';
+    }).join("");
+    return '<details class="ck-box" open><summary>Itens inclusos<span class="ck-n"></span></summary><div class="ck-list">' +
+      base.map(linha).join("") +
+      (op.length ? '<div class="ck-sub">Opcionais</div>' + op.map(linha).join("") : '') +
+      (extras ? '<div class="ck-sub">Itens extras</div>' + extras : '') +
+      '<button type="button" class="ck-add" data-act="xadd">+ Adicionar item</button></div></details>';
+  }
+  function renderCk(el, it){ var w = $(".ck-wrap", el); if (w) w.innerHTML = ckHTML(it); updItem(el, it); }
   function itemHTML(it, i, n){
     var pick = PRODUTOS.map(function(p){
       var on = it.prod === p.id;
@@ -438,21 +574,23 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
       '<div class="item-head"><h3>Porta ' + (i + 1) + '</h3><div class="item-acts"><button type="button" class="lnk" data-act="dup">Duplicar</button>' +
         (n > 1 ? '<button type="button" class="lnk" data-act="del">Remover</button>' : '') + '</div></div>' +
       '<div class="prod-pick" role="radiogroup" aria-label="Tipo de porta">' + pick + '</div>' +
-      '<label class="fld"><span>Descrição</span><textarea id="d-' + it.id + '" data-k="desc" rows="3" placeholder="Detalhes da porta: material, cor, motor, controles">' + esc(it.desc) + '</textarea></label>' +
       '<div class="row3">' +
         '<label class="fld"><span>Largura (m)</span><input id="l-' + it.id + '" data-k="larg" inputmode="decimal" autocomplete="off" placeholder="3,20" value="' + esc(it.larg) + '"></label>' +
         '<label class="fld"><span>Altura (m)</span><input id="a-' + it.id + '" data-k="alt" inputmode="decimal" autocomplete="off" placeholder="2,80" value="' + esc(it.alt) + '"></label>' +
         '<label class="fld"><span>Qtd.</span><input id="q-' + it.id + '" data-k="qtd" inputmode="numeric" autocomplete="off" placeholder="1" value="' + esc(it.qtd) + '"></label>' +
       '</div>' +
+      '<p class="warn" hidden>Use metros, com vírgula. Ex.: 3,20</p>' +
       '<label class="fld"><span>Valor por porta (R$)</span><input id="v-' + it.id + '" data-k="valor" inputmode="decimal" autocomplete="off" placeholder="0,00" value="' + esc(it.valor) + '"></label>' +
-      '<div class="item-foot"><span class="item-area"></span><span class="item-tot"></span></div>' +
-      '<p class="warn" hidden>Use metros, com vírgula. Ex.: 3,20</p></div>';
+      '<div class="ck-wrap">' + ckHTML(it) + '</div>' +
+      '<div class="item-foot"><span class="item-area"></span><span class="item-tot"></span></div></div>';
   }
   function updItem(el, it){
     var L = meas(it.larg), A = meas(it.alt);
     $(".item-area", el).textContent = L && A ? "Área " + dec2.format(L * A) + " m²" : "Área: falta largura e altura";
     $(".item-tot", el).textContent = brl.format(itemTotal(it));
     $(".warn", el).hidden = !(L > 15 || A > 15);
+    var n = linhas(it).length, cn = $(".ck-n", el);
+    if (cn) cn.textContent = n + (n === 1 ? " item" : " itens");
   }
   function renderItems(){
     var box = $("#items"), n = orc.itens.length;
@@ -496,6 +634,8 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
     var el = ev.target;
     if (el.dataset.f) { setPath(orc, el.dataset.f, el.value); changed(); }
     else if (el.dataset.e) { emp[el.dataset.e] = el.value; store.set(K.emp, emp); changed(); }
+    else if (el.dataset.cv) { var ic = findItem(el); if (ic) { estado(ic, el.dataset.cv).v = el.value; changed(); } }
+    else if (el.dataset.xt) { var ix = findItem(el), xt = ix && extraDe(ix, el.dataset.xt); if (xt) { xt.t = el.value; updItem(el.closest(".item"), ix); changed(); } }
     else if (el.dataset.k) { var it = findItem(el); if (it) { it[el.dataset.k] = el.value; updItem(el.closest(".item"), it); changed(); } }
   });
   document.addEventListener("change", function(ev){
@@ -503,15 +643,36 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
     if (el.matches(".prod input")) {
       var it = findItem(el); if (!it) return;
       it.prod = el.value;
-      if (descPadrao(it.desc)) { it.desc = DESC_PADRAO[it.prod] || ""; var ta = document.getElementById("d-" + it.id); if (ta) ta.value = it.desc; }
+      it.carac = caracPadrao(it.prod);
       el.closest(".prod-pick").querySelectorAll(".prod").forEach(function(l){ l.classList.toggle("on", l.querySelector("input").checked); });
+      renderCk(el.closest(".item"), it);
+      changed();
+    }
+    else if (el.dataset.ck || el.dataset.xk) {
+      var ik = findItem(el); if (!ik) return;
+      var st = el.dataset.ck ? estado(ik, el.dataset.ck) : extraDe(ik, el.dataset.xk);
+      if (!st) return;
+      st.on = el.checked;
+      el.closest(".ck").classList.toggle("off", !el.checked);
+      updItem(el.closest(".item"), ik);
       changed();
     }
   });
   $("#items").addEventListener("click", function(ev){
     var b = ev.target.closest("[data-act]"); if (!b) return;
     var it = findItem(b); if (!it) return;
-    var i = orc.itens.indexOf(it);
+    var i = orc.itens.indexOf(it), box = b.closest(".item");
+    if (b.dataset.act === "xadd") {
+      var nx = { id: uid(), t: "", on: true }; it.extras.push(nx);
+      renderCk(box, it); changed();
+      var inp = document.getElementById("xt-" + it.id + "-" + nx.id); if (inp) inp.focus();
+      return;
+    }
+    if (b.dataset.act === "xdel") {
+      it.extras = it.extras.filter(function(x){ return x.id !== b.dataset.x; });
+      renderCk(box, it); changed();
+      return;
+    }
     if (b.dataset.act === "dup") { var c = clone(it); c.id = uid(); orc.itens.splice(i + 1, 0, c); toast("Porta duplicada."); }
     if (b.dataset.act === "del" && orc.itens.length > 1) { orc.itens.splice(i, 1); toast("Porta removida."); }
     renderItems(); changed();
@@ -564,7 +725,7 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
     var b = ev.target.closest("[data-open]"); if (!b) return;
     var x = store.get(K.hist, []).filter(function(h){ return h.id === b.dataset.open; })[0];
     if (!x || !x.orc) return;
-    orc = clone(x.orc); orc.exemplo = false; savedSig = JSON.stringify(orc);
+    orc = clone(x.orc); orc.exemplo = false; orc.itens.forEach(normItem); savedSig = JSON.stringify(orc);
     renderAll(); showView("form"); window.scrollTo(0, 0);
     toast("Orçamento Nº " + pad(orc.numero) + " aberto.");
   });
@@ -663,6 +824,7 @@ details.card summary{cursor:pointer;font:800 13px/1.2 var(--display);letter-spac
   $("#btn-dl-png").addEventListener("click", function(){ baixar("png"); });
   $("#btn-share").addEventListener("click", compartilhar);
 
+  $("#cores").innerHTML = CORES.map(function(c){ return '<option value="' + esc(c) + '">'; }).join("");
   renderAll();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
 })();
